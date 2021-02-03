@@ -1,0 +1,39 @@
+// const createConstants = (...args) => {
+//     args.forEach(x => {
+//         console.log(`export const ${x} = '${x}';`);
+//     })
+// };
+
+// createConstants(
+//     'APPEND_NODE', 'REPLACE_NODES', 'VW_UPDATE', 'VH_UPDATE', 'MOVINGX_UPDATE',
+//     'MOVINGY_UPDATE', 'ADD_ADJACENCY', 'REMOVE_ADJACENCY', 'REPLACE_MATRIX',
+//     'NEW_EDGE', 'UPDATE_TEXTAREA_VALUE', 'SET_ORIGIN_NODE', 'DELETE_EDGES',
+//     'SET_GENERATED', 'TRAVERSE_EDGES', 'DELETE_TRAVERSED_EDGES', 'ADD_PATH_EDGES',
+//     'DELETE_PATH_EDGES', 'TOGGLE_ACTION', 'SET_ALGORITHM_TYPE', 'SET_ALGORITHM_INFO',
+//     'SET_MESSAGE_BOX'
+// );
+
+export const APPEND_NODE = 'APPEND_NODE';
+export const REPLACE_NODES = 'REPLACE_NODES';  
+export const VW_UPDATE = 'VW_UPDATE';
+export const VH_UPDATE = 'VH_UPDATE';
+export const MOVINGX_UPDATE = 'MOVINGX_UPDATE';
+export const MOVINGY_UPDATE = 'MOVINGY_UPDATE';
+export const ADD_ADJACENCY = 'ADD_ADJACENCY';  
+export const REMOVE_ADJACENCY = 'REMOVE_ADJACENCY';
+export const REPLACE_MATRIX = 'REPLACE_MATRIX';
+export const NEW_EDGE = 'NEW_EDGE';
+export const UPDATE_TEXTAREA_VALUE = 'UPDATE_TEXTAREA_VALUE';
+export const SET_ORIGIN_NODE = 'SET_ORIGIN_NODE';
+export const DELETE_EDGES = 'DELETE_EDGES';
+export const SET_GENERATED = 'SET_GENERATED';
+export const TRAVERSE_EDGES = 'TRAVERSE_EDGES';
+export const DELETE_TRAVERSED_EDGES = 'DELETE_TRAVERSED_EDGES';
+export const ADD_PATH_EDGES = 'ADD_PATH_EDGES';
+export const DELETE_PATH_EDGES = 'DELETE_PATH_EDGES';
+export const TOGGLE_ACTION = 'TOGGLE_ACTION';
+export const SET_ALGORITHM_TYPE = 'SET_ALGORITHM_TYPE';
+export const SET_ALGORITHM_INFO = 'SET_ALGORITHM_INFO';
+export const SET_MESSAGE_BOX = 'SET_MESSAGE_BOX';
+export const SET_TOUCH = 'SET_TOUCH';
+export const SET_TUTORIAL_ENDED = 'SET_TUTORIAL_ENDED';
