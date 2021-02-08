@@ -40,7 +40,7 @@ $dark-green: darken(#00ab4a, 5%);
         cursor: auto;
     }
 }
-html{
+html {
     position: relative;
 }
 
@@ -392,29 +392,30 @@ body {
     
             }
         }
-        .small-message {
+    }
+    .small-message {
+        position: absolute;
+        width: 28vmin;
+        height: 25vmin;
+        transform: translate(-50%, 15%);
+        background: darken(rgba(189, 215, 60, 1), 15%);
+        z-index: 12;
+
+        h4 {
+            font-size: 1vmax;
+            margin: 5% 10%;
+        }
+
+        a {
+            font-size: 1.5vmax;
             position: absolute;
-            width: 28vmin;
-            height: 25vmin;
-            transform: translate(-50%, 15%);
-            background: darken(rgba(189, 215, 60, 1), 15%);
+            left: 5%;
+            bottom: 5%;
+            text-decoration: none;
+            color: $light-text;
 
-            h4 {
-                font-size: 1vmax;
-                margin: 5% 10%;
-            }
-
-            a {
-                font-size: 1.5vmax;
-                position: absolute;
-                left: 5%;
-                bottom: 5%;
-                text-decoration: none;
-                color: $light-text;
-
-                &:focus {
-                    outline: 0.3vmin solid $gray-blue;
-                }
+            &:focus {
+                outline: 0.3vmin solid $gray-blue;
             }
         }
     }

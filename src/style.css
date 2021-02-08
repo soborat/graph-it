@@ -481,21 +481,22 @@ html.non-touch #root .block-screen .message-box button:hover span {
   transition: width 1.2s, height 1.2s;
 }
 
-#root .block-screen .small-message {
+#root .small-message {
   position: absolute;
   width: 28vmin;
   height: 25vmin;
   -webkit-transform: translate(-50%, 15%);
           transform: translate(-50%, 15%);
   background: #8fa522;
+  z-index: 12;
 }
 
-#root .block-screen .small-message h4 {
+#root .small-message h4 {
   font-size: 1vmax;
   margin: 5% 10%;
 }
 
-#root .block-screen .small-message a {
+#root .small-message a {
   font-size: 1.5vmax;
   position: absolute;
   left: 5%;
@@ -504,7 +505,7 @@ html.non-touch #root .block-screen .message-box button:hover span {
   color: #eee;
 }
 
-#root .block-screen .small-message a:focus {
+#root .small-message a:focus {
   outline: 0.3vmin solid #586db0;
 }
 

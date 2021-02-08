@@ -1,5 +1,6 @@
-export function generateRandomNodes (n) {
-    const {clientWidth: width, clientHeight: height} = document.querySelector('svg');
+export function generateRandomNodes (n, props, unit) {
+    const {clientWidth: width, clientHeight: height} = document.querySelector('.main');
+    console.log(width, height);
     const xAreas = Math.floor((n + 1) / 2), yAreas = 2;
     const xUnit = width / xAreas , yUnit = height / yAreas;
     let newNodes = Array(n);
@@ -8,27 +9,28 @@ export function generateRandomNodes (n) {
             let xStart = j * xUnit;
             let xEnd = (j + 1) * xUnit;
             if(j  === 0)
-                xStart += this.unit(0.3);
+                xStart += unit(0.3);
             if(j === xAreas - 1) 
-                xEnd -= this.unit(0.3);
+                xEnd -= unit(0.3);
             else {
-                xStart += this.unit(0.20);
-                xEnd -= this.unit(0.20);
+                xStart += unit(0.20);
+                xEnd -= unit(0.20);
             }
 
             let yStart = i * yUnit;
             let yEnd = (i + 1) * yUnit;
             if(i === 0) {
-                yStart += this.unit(0.3)
-                yEnd -= this.unit(0.3);
+                yStart += unit(0.3)
+                yEnd -= unit(0.3);
             }
             else 
-                yEnd -= this.unit(0.3);
+                yEnd -= unit(0.3);
                 
             const x = randInt(xStart, xEnd), y = randInt(yStart, yEnd);
-            newNodes[k] = [x / this.props.vw, y / this.props.vh];
+            newNodes[k] = [x / props.vw, y / props.vh];
         }
     }
+    console.log(n, newNodes, 'newnodes')
     randomShuffle(newNodes);
     return newNodes;
 }
@@ -68,7 +70,7 @@ export function randInt (min, max) {
 }
 
 export function emptyMatrix () {
-    return Array(50).fill(0).map(() => Array(50).fill(0));
+    return Array(25).fill(0).map(() => Array(25).fill(0));
 }
 
 export function isNumber (str){
@@ -83,11 +85,11 @@ export function dist(x1, x2, y1, y2){
     return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
 }
 
-export function closestNode(x, y) {
+export function closestNode(x, y, props, dist) {
     let bestNode = -1, minDisance = Infinity;
-    this.props.nodes.forEach((coords, i) => {
-        let distance = (coords[0] * this.props.vw - x) ** 2 + (coords[1] * this.props.vh - y) ** 2;
-        if(distance < minDisance && distance < this.unit(0.7) ** 2) {
+    props.nodes.forEach((coords, i) => {
+        let distance = (coords[0] * props.vw - x) ** 2 + (coords[1] * props.vh - y) ** 2;
+        if(distance < minDisance && distance < dist ** 2) {
             minDisance = distance;
             bestNode = i;
         }

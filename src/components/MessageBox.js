@@ -1,55 +1,49 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import {setMessageBox} from '../store';
 
 
-class MessageBox extends React.PureComponent {
-    boxMouseMove = ({nativeEvent: e}) => {
+const MessageBox = ({messageBox, setMessageBox}) => {
+    const doc = document.documentElement;
+
+    const boxMouseMove = ({nativeEvent: e}) => {
         requestAnimationFrame(() => {
-            document.documentElement.style.setProperty('--mouse-x-box', e.offsetX + 'px');
+            doc.style.setProperty('--mouse-x-box', e.offsetX + 'px');
         });
     }
 
-    btnMouseMove = ({nativeEvent: e}) => {
+    const btnMouseMove = ({nativeEvent: e}) => {
         requestAnimationFrame(() => {
-            document.documentElement.style.setProperty('--mouse-x-btn', e.offsetX + 'px');
-            document.documentElement.style.setProperty('--mouse-y-btn', e.offsetY + 'px');
+            doc.style.setProperty('--mouse-x-btn', e.offsetX + 'px');
+            doc.style.setProperty('--mouse-y-btn', e.offsetY + 'px');
         });
     }
 
-    btnClick = () => {
-        console.log('OK')
-        this.props.setMessageBox('');
+    const btnClick = () => {
+        setMessageBox('');
     }
 
-    componentDidUpdate() {
-        console.log('didupdate msgbox');
+    useEffect(() => {
         const btn = document.querySelector('.message-box button');
-        console.log(btn);
         if(btn)
             btn.focus();
-    }
-
-    render() {
-        const message = this.props.messageBox;
-        console.log('rerender messagebox')
-        if(message[0]) {
-            console.log(message)
-            return (
-                <div className={"block-screen"}>
-                    <div className="message-box">
-                        <div className="message" onMouseMove={e => this.boxMouseMove(e)}>
-                            {message.map((row, i) => <h1 key={i}>{row}</h1>)}
-                        </div>
-                        <button 
-                            onMouseMove={e => this.btnMouseMove(e)} 
-                            onClick={e => this.btnClick(e)}>OK<span></span></button>
+    });
+    if(messageBox[0]) {
+        return (
+            <div className="block-screen">
+                <div className="message-box">
+                    <div className="message" onMouseMove={e => boxMouseMove(e)}>
+                        {messageBox.map((row, i) => <h1 key={i}>{row}</h1>)}
                     </div>
+                    <button 
+                        onMouseMove={e => btnMouseMove(e)} 
+                        onClick={e => btnClick(e)}>OK<span></span>
+                    </button>
                 </div>
-            );
-        }
-        return null;
+            </div>
+        )
     }
+    return null;
 }
 
 export default connect(

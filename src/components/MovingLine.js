@@ -2,21 +2,20 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 
-class MovingLine extends React.PureComponent {
-    unit = x => (6 * this.props.vw + 6 * this.props.vh) * x;
-    render() {
-        if(this.props.originNode) {
-            return (
-                <line
-                    className="moving-line" 
-                    x1={this.props.originNode.offsetLeft} y1={this.props.originNode.offsetTop}
-                    x2={this.props.movingX} y2={this.props.movingY}
-                    style={{strokeWidth: this.unit(0.03), strokeLinejoin: 'round'}}>
-                </line>
-            );
-        }
-        else return null;
+const MovingLine = ({vw, vh, originNode, movingX, movingY}) => {
+    const unit = x => (6 * vw + 6 * vh) * x;
+    if(originNode) {
+        return (
+            <line
+                className="moving-line" 
+                x1={originNode.offsetLeft} y1={originNode.offsetTop}
+                x2={movingX} y2={movingY}
+                style={{strokeWidth: unit(0.03), strokeLinejoin: 'round'}}>
+            </line>
+        )
     }
+
+    return null;
 }
 
 export default connect(

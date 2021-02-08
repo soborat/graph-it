@@ -3,55 +3,51 @@ import { connect } from 'react-redux';
 import { setGenerated } from '../store';
 import * as utils from '../utils';
 
-class Edges extends React.Component {
-    unit = x => (6 * this.props.vw + 6 * this.props.vh) * x;
 
-    shouldComponentUpdate(nextProps) {
-        let changed = false, n = Math.max(this.props.nodes.length, nextProps.nodes.length);
-        for(let i = 0; i < 50; ++i)
-            if(String(this.props.adj[i]) !== String(nextProps.adj[i]))
-                changed = true;
+const Edges = ({adj, nodes, vw, vh, isGenerated, setGenerated}) => {
+    const unit = x => (6 * vw + 6 * vh) * x;
 
-        for(let i = 0; i < n; ++i)
-            if(String(this.props.nodes[i]) !== String(nextProps.nodes[i]))
-                changed = true;
+    const edges = adj.map((row, i) => row.map((edge, j) => {
+        if(edge && i < nodes.length && j < nodes.length) {
+            const [x1, y1] = nodes[i];
+            const [x2, y2] = nodes[j];
+            const dist = utils.dist(x1 * vw, x2 * vw, y1 * vh, y2 * vh);
+            return (
+                <line 
+                    id={(isGenerated ? Math.random() : `edge-${i}-${j}`)}
+                    key={(isGenerated ? Math.random() : `edge-${i}-${j}`)}
+                    className={isGenerated ? 'animated-line' : 'static-line'}
+                    strokeDasharray={(isGenerated ? dist : '')}
+                    strokeDashoffset={(isGenerated ? dist : '')}
+                    x1={x1 * vw} y1={y1 * vh} x2={x2 * vw} y2={y2 * vh} 
+                    style={{strokeWidth: unit(0.03), strokeLinejoin: 'round'}}
+                >   
+                </line>
+            )
+        }
+        return null;
+    }));
+    setTimeout(() => setGenerated(false), 0);
+    return edges;
 
-        if(this.props.vh !== nextProps.vh || this.props.vw !== nextProps.vw)
-            changed = true;
-
-        return changed;
-    }
-
-    render() {
-        const edges = this.props.adj.map((row, i) => row.map((edge, j) => {
-            if(edge && i < this.props.nodes.length && j < this.props.nodes.length) {
-                const [x1, y1] = this.props.nodes[i];
-                const [x2, y2] = this.props.nodes[j];
-                const dist = utils.dist(x1 * this.props.vw, 
-                            x2 * this.props.vw, y1 * this.props.vh, y2* this.props.vh);
-                return (
-                    <line 
-                        id={(this.props.isGenerated ? Math.random() : `edge-${i}-${j}`)}
-                        key={(this.props.isGenerated ? Math.random() : `edge-${i}-${j}`)}
-                        className={this.props.isGenerated ? 'animated-line' : 'static-line'}
-                        strokeDasharray={(this.props.isGenerated ? dist : '')}
-                        strokeDashoffset={(this.props.isGenerated ? dist : '')}
-                        x1={x1 * this.props.vw}
-                        y1={y1 * this.props.vh}
-                        x2={x2 * this.props.vw}
-                        y2={y2 * this.props.vh} 
-                        style={{strokeWidth: this.unit(0.03), strokeLinejoin: 'round'}}
-                    >   
-                    </line>
-                )
-            }
-            return null;
-
-        }))
-        setTimeout(() => this.props.setGenerated(false), 0);
-        return edges;
-    }
 }
+
+const areEqual = (prev, next) => {
+    let same = true, n = Math.max(prev.nodes.length, next.nodes.length);
+    for(let i = 0; i < 20; ++i)
+        if(String(prev.adj[i]) !== String(next.adj[i]))
+            same = false;
+
+    for(let i = 0; i < n; ++i)
+        if(String(prev.nodes[i]) !== String(next.nodes[i]))
+            same = false;
+
+    if(prev.vh !== next.vh || prev.vw !== next.vw)
+        same = false;
+
+    return same;
+}
+
 
 export default connect(
     state => ({
@@ -62,4 +58,4 @@ export default connect(
         isGenerated: state.isGenerated,
     }),
     {setGenerated}
-)(Edges);
+)(React.memo(Edges, areEqual));

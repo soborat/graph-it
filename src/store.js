@@ -1,6 +1,7 @@
 import { createReducer, createAction } from '@reduxjs/toolkit';
 import { combineReducers } from 'redux';
 import * as CONST from './constants';
+import { emptyMatrix } from './utils';
 
 export const appendNode = createAction(CONST.APPEND_NODE);
 export const replaceNodes = createAction(CONST.REPLACE_NODES);
@@ -23,15 +24,18 @@ export const setAlgorithmInfo = createAction(CONST.SET_ALGORITHM_INFO);
 export const setMessageBox = createAction(CONST.SET_MESSAGE_BOX);
 export const setTouch = createAction(CONST.SET_TOUCH);
 export const setTutorialEnded = createAction(CONST.SET_TUTORIAL_ENDED);
+export const setNodeColor = createAction(CONST.SET_NODE_COLOR);
+export const setEdgeColor = createAction(CONST.SET_EDGE_COLOR);
+
 export default combineReducers({
     nodes: createReducer([], {
         [appendNode]: (state, action) => [...state, action.payload],
         [replaceNodes]: (state, action) => action.payload
     }),
-    vw: createReducer(1, {
+    vw: createReducer(window.innerWidth / 100, {
         [vwUpdate]: (state, action) => action.payload
     }),
-    vh: createReducer(1, {
+    vh: createReducer(window.innerHeight / 100, {
         [vhUpdate]: (state, action) => action.payload
     }),
     movingX: createReducer(null, {
@@ -40,7 +44,7 @@ export default combineReducers({
     movingY: createReducer(null, {
         [movingYUpdate]: (state, action) => action.payload
     }),
-    adj: createReducer(Array(50).fill(0).map(() => Array(50).fill(0)), {
+    adj: createReducer(emptyMatrix(), {
         [replaceMatrix]: (state, action) => action.payload,
     }),
     currentEdge: createReducer([], {
@@ -80,5 +84,11 @@ export default combineReducers({
     }),
     endedTutorials: createReducer(0, {
         [setTutorialEnded]: (state) => state + 1
+    }),
+    nodeColor: createReducer('rgb(0, 128, 0)', {
+        [setNodeColor]: (state, action) => action.payload
+    }),
+    edgeColor: createReducer('rgb(155, 166, 201)', {
+        [setEdgeColor]: (state, action) => action.payload
     })
 });

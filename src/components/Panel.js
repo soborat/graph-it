@@ -1,83 +1,83 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import AlgorithmInfo from './AlgorithmInfo';
 import * as utils from '../utils';
 import { replaceMatrix, replaceNodes, newEdge, 
          deleteEdges, setGenerated, traverseEdges, deleteTraversedEdges, 
          addPathEdges, deletePathEdges, toggleAction, setAlgorithmType,
-         setMessageBox, setAlgorithmInfo} from '../store';
+         setMessageBox, setAlgorithmInfo, setNodeColor, setEdgeColor} from '../store';
 
 
-// sa fie complet utilizabil doar din tastatura
+const Panel = props => {
+    const frozenScreen = React.useRef(false);
+    const traverseColor = React.useRef('#8036e0');
+    const pathColor = React.useRef('#de0012');
+    const start = React.useRef(null);
+    const end = React.useRef(null);
+    const doc = document.documentElement;
+    const nodeColors = [
+        {color: 'rgb(0, 128, 0)', index: '9'},
+        {color: 'rgb(88, 109, 176)', index: '10'},
+        {color: 'rgb(235, 137, 19)', index: '11'}
+    ];
+    const edgeColors = [
+        {color: 'rgb(155, 166, 201)', index: '13'},
+        {color: 'rgb(139, 181, 151)', index: '14'},
+        {color: 'rgb(111, 173, 189)', index: '15'}
+    ];
 
-class Panel extends React.Component {
-    frozenScreen = false;
-    traverseColor = '#8036e0';
-    pathColor = '#de0012';
-    start = null;
-    end = null;
-    focusedDropdown = null;
+    const unit = x => (6 * props.vw + 6 * props.vh) * x;
 
-    unit = x => (6 * this.props.vw + 6 * this.props.vh) * x;
-
-    shouldComponentUpdate = (nextProps) => (
-        this.props.isTouch !== nextProps.isTouch
-    )
-
-    newRandomNodes = e => {
+    const newRandomNodes = e => {
         if(e._reactName === 'onKeyDown' && e.key !== 'Enter')
             return;
-        this.props.setGenerated(true);
-        this.props.replaceNodes(
-            utils.generateRandomNodes.call(this, this.props.nodes.length)
+        props.setGenerated(true);
+        props.replaceNodes(
+            utils.generateRandomNodes(props.nodes.length, props, unit)
         );
     }
 
-    newRandomEdges = e => {
+    const newRandomEdges = e => {
         if(e._reactName === 'onKeyDown' && e.key !== 'Enter')
             return;
-        this.props.deleteEdges();
-        this.props.setGenerated(true);
-        this.props.newEdge(
-            utils.generateRandomEdges.call(this, this.props.nodes.length)
+        props.deleteEdges();
+        props.setGenerated(true);
+        props.newEdge(
+            utils.generateRandomEdges(props.nodes.length)
         );
     }
 
-    newRandomGraph = e => {
-        if(e._reactName === 'onKeyDown' && e.key !== 'Enter')
+    const newRandomGraph = e => {
+        if(e && e._reactName === 'onKeyDown' && e.key !== 'Enter')
             return;
         let newLength = utils.randInt(5, 12);
-        this.props.replaceMatrix(utils.emptyMatrix());
-        this.props.deleteEdges();
-        this.props.replaceNodes(
-            utils.generateRandomNodes.call(this, newLength)
+        props.replaceMatrix(utils.emptyMatrix());
+        props.deleteEdges();
+        props.replaceNodes(
+            utils.generateRandomNodes(newLength, props, unit)
         );
-        this.props.setGenerated(true);
-        this.props.newEdge(
-            utils.generateRandomEdges.call(this, newLength)
+        props.setGenerated(true);
+        props.newEdge(
+            utils.generateRandomEdges(newLength)
         );
     }
 
-    getInput =  async message => {
+    const getInput =  async message => {
         const main = document.querySelector('.main');
         let target = null;
-        const eventType = this.props.isTouch ? 'touchstart' : 'click';
-        this.props.setAlgorithmInfo(message);
+        const eventType = props.isTouch ? 'touchstart' : 'click';
+        props.setAlgorithmInfo(message);
         const selectNode = e => {
             let event = e;
             if(eventType === 'touchstart')
                 event = e.touches[0];
-            console.log(event)
             if(target !== null)
                 return;
-            const [offsetX, offsetY] = utils.getOffset.call(this, event, main);
-            console.log(offsetX, offsetY, event.clientX, event.clientY, 'offsets');
-            const currentTarget = utils.closestNode.call(this, offsetX, offsetY);
-            console.log(currentTarget, 'currentTarget')
+            const [offsetX, offsetY] = utils.getOffset(event, main);
+            const currentTarget = utils.closestNode(offsetX, offsetY, props, unit(0.7));
             if(currentTarget !== -1) {
                 main.removeEventListener(eventType, selectNode);
                 target = currentTarget;
-                console.log(target);
             }
         }
         main.addEventListener(eventType, e => selectNode(e));
@@ -89,52 +89,48 @@ class Panel extends React.Component {
         throw new Error('USER_TIMEOUT');
     }
 
-    startAlgorithm = async () => {
+    const startAlgorithm = async () => {
         document.querySelector('textarea').readOnly = true;
         document.querySelector('.hidden-content').classList.add('hidden');
         const main = document.querySelector('.main');
-        let start, end;
+        let startTemp, endTemp;
         try {
-            if(this.props.nodes.length < 2) {
-                console.log('nu merge')
+            if(props.nodes.length < 2) {
                 await utils.sleep(100);
-                this.props.setMessageBox(['You need a graph to visualise an algorithm']);
+                props.setMessageBox(['You need a graph to visualise an algorithm']);
                 throw new Error('NO_GRAPH');
             }
-            start = await this.getInput('Choose the starting node');
-            this.start = start;
-            main.children[start].innerHTML = '<i class="fas fa-arrow-circle-right"></i>';
+            startTemp = await getInput('Choose the starting node');
+            start.current = startTemp;
+            main.children[start.current].innerHTML = '<i class="fas fa-arrow-circle-right"></i>';
             do {
-                end = await this.getInput('Choose the destination');
-            }while(start === end);
-            this.end = end;
-            main.children[end].innerHTML = '<i class="fas fa-bullseye"></i>';
+                endTemp = await getInput('Choose the destination');
+            }while(startTemp === endTemp);
+            end.current = endTemp;
+            main.children[end.current].innerHTML = '<i class="fas fa-bullseye"></i>';
         } catch(err) {
-            // console.log(err);
             throw new Error('NO_INPUT');
         }
-        
-        console.log(start + 1, end + 1, 'points');
         document.body.style.pointerEvents = 'none';
-        this.props.setAlgorithmInfo(' ');
+        props.setAlgorithmInfo(' ');
         await utils.sleep(300);
-        return [main, this.props.nodes.length, [start, end]];
+        return [main, props.nodes.length, [start.current, end.current]];
     }
 
-    BFS = async e => {
+    const BFS = async e => {
         if(e._reactName === 'onKeyDown' && e.key !== 'Enter')
             return;
-        this.props.setAlgorithmType('bfs');
+        props.setAlgorithmType('bfs');
         let startParams;
         try {
-            startParams = await this.startAlgorithm();
+            startParams = await startAlgorithm();
         }
-        catch {
-            this.cleanup();
+        catch(err){
+            cleanup();
             return;
         }
         const [main, n, [start, end]] = startParams;
-        main.children[start].style.background = this.traverseColor;
+        main.children[start].style.background = traverseColor.current;
         let q = [], index = -1, mark = Array(n).fill(0);
         
         mark[start] = 1;
@@ -142,13 +138,11 @@ class Panel extends React.Component {
         await utils.sleep(100);
         while(index !== q.length - 1 && !mark[end]) {
             const node = q[++index];
-            console.log(node + 1);
             let temp = [];
             for(let i = 0; i < n; ++i) {
-                if((this.props.adj[node][i] || this.props.adj[i][node]) && !mark[i]) {
+                if((props.adj[node][i] || props.adj[i][node]) && !mark[i]) {
                     mark[i] = mark[node] + 1;
-                    console.log('conneciton', node + 1, i + 1);
-                    this.props.traverseEdges([node, i]);
+                    props.traverseEdges([node, i]);
                     q.push(i);
                     temp.push(i);
                 }
@@ -156,7 +150,7 @@ class Panel extends React.Component {
             if(temp.length)
                 await utils.sleep(1350);
             temp.forEach(x => {
-                main.children[x].style.background = this.traverseColor;
+                main.children[x].style.background = traverseColor.current;
                 main.children[x].style.animation = 'visitNode 0.5s ease-in-out';
                 setTimeout(() => {
                     main.children[x].style.animation = null;
@@ -165,52 +159,50 @@ class Panel extends React.Component {
             if(temp.length)
                 await utils.sleep(350);
         }
-        console.log('gata bf')
         let x = end, path = [x];
 
         if(mark[end]) {
             while(x !== start) {
-                for(let i = 0; i < 50; ++i)
-                    if((this.props.adj[x][i] || this.props.adj[i][x]) && mark[i] === mark[x] - 1) {
+                for(let i = 0; i < 20; ++i)
+                    if((props.adj[x][i] || props.adj[i][x]) && mark[i] === mark[x] - 1) {
                         x = i;
                         path.push(x);
                         break;
                     }
             }
-            console.log(path);
             for(let i = path.length - 1; i >= 0; --i) {
-                main.children[path[i]].style.background = this.pathColor;
+                main.children[path[i]].style.background = pathColor.current;
                 if(i > 0) {
-                    this.props.addPathEdges([path[i], path[i - 1]]);
+                    props.addPathEdges([path[i], path[i - 1]]);
                     await utils.sleep(800);
                 }
             }
-            this.props.setAlgorithmInfo(path.reverse().map(x => +x + 1).join('\u2192'));
+            props.setAlgorithmInfo(path.reverse().map(x => +x + 1).join('\u2192'));
         }
         else {
-            this.props.setAlgorithmInfo('No path was found');
+            props.setAlgorithmInfo('No path was found');
         }
 
         document.body.style.pointerEvents = 'auto';
         document.querySelector('textarea').readOnly = false;
-        this.frozenScreen = true;
-        this.props.toggleAction(false);
+        frozenScreen.current = true;
+        props.toggleAction(false);
     }
 
-    DFS = async e => {
+    const DFS = async e => {
         if(e._reactName === 'onKeyDown' && e.key !== 'Enter')
             return;
-        this.props.setAlgorithmType('dfs');
+        props.setAlgorithmType('dfs');
         let startParams;
         try {
-            startParams = await this.startAlgorithm();
+            startParams = await startAlgorithm();
         }
         catch {
-            this.cleanup();
+            cleanup();
             return;
         }
         const [main, n, [start, end]] = startParams;
-        main.children[start].style.background = this.traverseColor;
+        main.children[start].style.background = traverseColor.current;
         let mark = Array(n).fill(0), temp = [], path = [];
         await utils.sleep(100);
 
@@ -224,18 +216,16 @@ class Panel extends React.Component {
             }
 
             temp.push(node);
-            console.log(node, 'current node');
             mark[node] = 1;
             for(let i = 0; i < n && !path.length; ++i) {
-                if((this.props.adj[node][i] || this.props.adj[i][node]) && !mark[i]) {
-                    this.props.traverseEdges([node, i]);
+                if((props.adj[node][i] || props.adj[i][node]) && !mark[i]) {
+                    props.traverseEdges([node, i]);
                     await utils.sleep(1000);
-                    main.children[i].style.background = this.traverseColor;
+                    main.children[i].style.background = traverseColor.current;
                     main.children[i].style.animation = 'visitNode 0.5s ease-in-out';
                     setTimeout(() => {
                         main.children[i].style.animation = null;
                     }, 500);
-                    console.log(node, i, 'alta');
                     await utils.sleep(350);
                     await recursiveDFS(i);
                 }
@@ -247,14 +237,12 @@ class Panel extends React.Component {
                 if(!edge)
                     return;
                 const dist = utils.dist(...['x1', 'x2', 'y1', 'y2'].map(k => +edge.getAttribute(k)));
-                console.log(dist, 'dist')
                 edge.style.animation = null;
                 edge.style.strokeDasharray = dist;
                 edge.style.strokeDashoffset = 0;
                 document.documentElement.style.setProperty('--dist', dist);
                 edge.style.animation = 'disappear 0.7s linear forwards';
                 main.children[j].style.background = null;
-                console.log('renuntam la ', i + 1, j + 1);
                 temp.pop();
                 await utils.sleep(700);
                 edge.style.display = 'none';
@@ -262,184 +250,183 @@ class Panel extends React.Component {
 
         }
         await recursiveDFS(start);
-        console.log(path, 'path')
         if(path.length) {
             for(let i = 0; i < path.length; ++i) {
-                main.children[path[i]].style.background = this.pathColor;
+                main.children[path[i]].style.background = pathColor.current;
                 if(i !== path.length - 1){
-                    this.props.addPathEdges([path[i], path[i + 1]]);
+                    props.addPathEdges([path[i], path[i + 1]]);
                     await utils.sleep(750);
                 }
             }
-            this.props.setAlgorithmInfo(path.map(x => Number(x) + 1).join('\u2192'));
+            props.setAlgorithmInfo(path.map(x => Number(x) + 1).join('\u2192'));
         }
         else {
-            this.props.setAlgorithmInfo('No path was found.');
+            props.setAlgorithmInfo('No path was found.');
         }
         document.body.style.pointerEvents = 'auto';
         document.querySelector('textarea').readOnly = false;
-        this.frozenScreen = true;
-        this.props.toggleAction(false);
+        frozenScreen.current = true;
+        props.toggleAction(false);
     }
 
 
-    toggleDropdown = e => {
-        console.log(e._reactName, 'toggledropdown', this.props.isTouch)
+    const toggleDropdown = e => {
         if((e.target !== e.currentTarget) || (e._reactName === 'onKeyDown' && e.key !== 'Enter'))
             return;
         const currentHiddenContent = document.querySelector('#' + e.target.id + ' .hidden-content');
         const restHiddenContents = [...document.querySelectorAll('.hidden-content')].filter(x => x !== currentHiddenContent);
-        console.log(restHiddenContents)
         restHiddenContents.forEach(x => x.classList.add('hidden'));
         currentHiddenContent.classList.toggle('hidden')
     }
 
-    test2 = e => {
-        console.log('related', e.relatedTarget, 'related')
-    }
-
-    cleanup = () => {
+    const cleanup = () => {
         const main = document.querySelector('.main');
         Array.from(main.children).filter(x => x.className === 'node').map(x => x.style.background = null);
-        if(this.start != null)
-            main.children[this.start].innerHTML = `<h1>${this.start + 1}</h1>`;
-        if(this.end != null)
-            main.children[this.end].innerHTML = `<h1>${this.end + 1}</h1>`;
-        this.start = null;
-        this.end = null;
+        if(start.current != null)
+            main.children[start.current].innerHTML = `<h1>${start.current + 1}</h1>`;
+        if(end.current != null)
+            main.children[end.current].innerHTML = `<h1>${end.current + 1}</h1>`;
+        start.current = null;
+        end.current = null;
         document.body.style.pointerEvents = 'auto';
         document.querySelector('textarea').readOnly = false;
-        this.props.setAlgorithmInfo('');
-        this.props.setAlgorithmType('');
-        this.props.deletePathEdges();
-        this.props.deleteTraversedEdges();
+        props.setAlgorithmInfo('');
+        props.setAlgorithmType('');
+        props.deletePathEdges();
+        props.deleteTraversedEdges();
     }
 
-
-    setColor = e => {
+    const setColor = e => {
+        const target = e.target;
+        const parent = target.parentElement;
+        const type = parent.id[0] === 'n' ? 'node' : 'edge';
         if(e._reactName === 'onKeyDown' && e.key !== 'Enter')
             return;
-        const target = e.target;
         if(target.className.split(' ')[0] !== 'color-option')
             return;
-        const parent = target.parentElement;
-        Array.from(parent.children).forEach(sibling => {
-            sibling.classList.remove('selected-color');
-        });
-        const type = parent.id[0] === 'n' ? 'node' : 'edge';
-        const background = target.style.background;
-        document.documentElement.style.setProperty('--' + type + '-color', background);
-        window.localStorage.setItem(type + 'Color', background);
-        target.classList.add('selected-color');
+        if(type === 'node')
+            props.setNodeColor(target.style.backgroundColor);
+        else
+            props.setEdgeColor(target.style.backgroundColor);
     }
 
-    componentDidMount() {
+    useEffect(() => {
         ['mousedown', 'click', 'keydown', 'touchstart'].forEach(eventType => {
             document.addEventListener(eventType, e => {
-                if(this.frozenScreen) {
-                    this.frozenScreen = false;
-                    this.props.toggleAction(true);
-                    this.cleanup();
+                if(frozenScreen.current) {
+                    frozenScreen.current = false;
+                    props.toggleAction(true);
+                    cleanup();
                 }
             })
         });
-        const {localStorage} = window, doc = document.documentElement;
-        // localStorage.clear();
-        console.log(localStorage)
-        const nodeColor = localStorage.getItem('nodeColor') || 'rgb(0, 128, 0)';
-        const edgeColor = localStorage.getItem('edgeColor') || 'rgb(155, 166, 201)';
-        localStorage.setItem('nodeColor', nodeColor);
-        localStorage.setItem('edgeColor', edgeColor);
-        doc.style.setProperty('--node-color', nodeColor);
-        doc.style.setProperty('--edge-color', edgeColor);
-        const colors = Array.from(document.querySelectorAll('.color-option'));
-        const defaultNodeColor = colors.filter(color => color.style.backgroundColor === nodeColor)[0];
-        const defaultEdgeColor = colors.filter(color => color.style.backgroundColor === edgeColor)[0];
-        [defaultNodeColor, defaultEdgeColor].forEach(x => x.classList.add('selected-color'));
-    }
+        if(localStorage.nodeColor !== props.nodeColor && localStorage.nodeColor)
+            props.setNodeColor(localStorage.nodeColor);
 
-    render() {
-        return (
-            <div className="panel">
-                <AlgorithmInfo/>
-                <ul>
-                    <li onClick={this.props.isTouch ?  null : (e => this.newRandomNodes(e))} 
-                        onTouchStart={this.props.isTouch ? (e => this.newRandomNodes(e)) : null}
-                        onKeyDown={e => this.newRandomNodes(e)}
-                        tabIndex='1'
-                    >Redistribute nodes</li>
-                    <li onClick={this.props.isTouch ?  null : (e => this.newRandomEdges(e))}
-                        onTouchStart={this.props.isTouch ? (e => this.newRandomEdges(e)) : null}
-                        onKeyDown={e => this.newRandomEdges(e)}
-                        tabIndex='2'
-                    >Random edges</li>
-                    <li onClick={this.props.isTouch ?  null : (e => this.newRandomGraph(e))}
-                        onTouchStart={this.props.isTouch ? (e => this.newRandomGraph(e)) : null}
-                        onKeyDown={e => this.newRandomGraph(e)}
-                        tabIndex='3'
-                    >Random Graph</li>
-                    <li id="algorithms-dropdown" className="hover-expandable" 
-                        onClick={this.props.isTouch ? null : (e => this.toggleDropdown(e))}
-                        onTouchStart={this.props.isTouch ? (e => this.toggleDropdown(e)) : null}
-                        onKeyDown={e => this.toggleDropdown(e)}
-                        // onFocus={e => this.test(e)}
-                        onBlur={e => this.test2(e)}
-                        tabIndex='4'
-                    >Algorithms<span>&#9660;</span>
-                        <div className="hidden-content hidden">
-                            <ul>
-                                <li onClick={this.props.isTouch ?  null : (e => this.BFS(e))}
-                                    onTouchStart={this.props.isTouch ? (e => this.BFS(e)) : null}
-                                    onKeyDown={e => this.BFS(e)}
-                                    tabIndex='5'
-                                >BFS</li>
-                                <li onClick={this.props.isTouch ?  null : (e => this.DFS(e))} 
-                                    onTouchStart={this.props.isTouch ? (e => this.DFS(e)) : null}
-                                    onKeyDown={e => this.DFS(e)}
-                                    tabIndex='6'
-                                >DFS</li>
-                            </ul>
-                        </div>
-                    </li>
-                    <li id="colors-dropdown" 
-                        className="hover-expandable" tabIndex='7'
-                        onClick={this.props.isTouch ? null : (e => this.toggleDropdown(e))}
-                        onTouchStart={this.props.isTouch ? (e => this.toggleDropdown(e)) : null}
-                        onKeyDown={e => this.toggleDropdown(e)}
-                        onBlur={e => this.test2(e)}
-                    >Change colors<span>&#9660;</span>
-                        <div className="hidden-content hidden">
-                            <ul>
-                                <li tabIndex='8'>Nodes color
-                                    <ul className="color-list" id="node-color-picker" 
-                                        onClick={this.props.isTouch ?  null : (e => this.setColor(e))}
-                                        onTouchStart={this.props.isTouch ? (e => this.setColor(e)) : null}
-                                        onKeyDown={e => this.setColor(e)}
-                                    >
-                                        <div className="color-option" style={{background: 'rgb(0, 128, 0)'}} tabIndex='9'></div>
-                                        <div className="color-option" style={{background: 'rgb(88, 109, 176)'}} tabIndex='10'></div>
-                                        <div className="color-option" style={{background: 'rgb(235, 137, 19)'}} tabIndex='11'></div>
-                                    </ul>
-                                </li>
-                                <li tabIndex='12'>Edges color
-                                    <ul className="color-list" id="edge-color-picker" 
-                                        onClick={this.props.isTouch ?  null : (e => this.setColor(e))}
-                                        onTouchStart={this.props.isTouch ? (e => this.setColor(e)) : null}
-                                        onKeyDown={e => this.setColor(e)}
-                                    >
-                                        <div className="color-option" style={{background: 'rgb(155, 166, 201)'}} tabIndex='13'></div>
-                                        <div className="color-option" style={{background: 'rgb(139, 181, 151)'}} tabIndex='14'></div>
-                                        <div className="color-option" style={{background: 'rgb(111, 173, 189)'}} tabIndex='15'></div>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-        )
-    }
+        if(localStorage.edgeColor !== props.edgeColor && localStorage.edgeColor)
+            props.setEdgeColor(localStorage.edgeColor);
+        console.log(props.vw, props.vh)
+        newRandomGraph();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    useEffect(() => {
+
+        localStorage.setItem('nodeColor', props.nodeColor);
+        localStorage.setItem('edgeColor', props.edgeColor);
+        doc.style.setProperty('--node-color', props.nodeColor);
+        doc.style.setProperty('--edge-color', props.edgeColor);// eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [props.nodeColor, props.edgeColor])
+
+    return (
+        <div className="panel">
+            <AlgorithmInfo/>
+            <ul>
+                <li onClick={props.isTouch ?  null : (e => newRandomNodes(e))} 
+                    onTouchStart={props.isTouch ? (e => newRandomNodes(e)) : null}
+                    onKeyDown={e => newRandomNodes(e)}
+                    tabIndex='1'
+                >Redistribute nodes</li>
+                <li onClick={props.isTouch ?  null : (e => newRandomEdges(e))}
+                    onTouchStart={props.isTouch ? (e => newRandomEdges(e)) : null}
+                    onKeyDown={e => newRandomEdges(e)}
+                    tabIndex='2'
+                >Random edges</li>
+                <li onClick={props.isTouch ?  null : (e => newRandomGraph(e))}
+                    onTouchStart={props.isTouch ? (e => newRandomGraph(e)) : null}
+                    onKeyDown={e => newRandomGraph(e)}
+                    tabIndex='3'
+                >Random Graph</li>
+                <li id="algorithms-dropdown" className="hover-expandable" 
+                    onClick={props.isTouch ? null : (e => toggleDropdown(e))}
+                    onTouchStart={props.isTouch ? (e => toggleDropdown(e)) : null}
+                    onKeyDown={e => toggleDropdown(e)}
+                    tabIndex='4'
+                >Algorithms<span>&#9660;</span>
+                    <div className="hidden-content hidden">
+                        <ul>
+                            <li onClick={props.isTouch ?  null : (e => BFS(e))}
+                                onTouchStart={props.isTouch ? (e => BFS(e)) : null}
+                                onKeyDown={e => BFS(e)}
+                                tabIndex='5'
+                            >BFS</li>
+                            <li onClick={props.isTouch ?  null : (e => DFS(e))} 
+                                onTouchStart={props.isTouch ? (e => DFS(e)) : null}
+                                onKeyDown={e => DFS(e)}
+                                tabIndex='6'
+                            >DFS</li>
+                        </ul>
+                    </div>
+                </li>
+                <li id="colors-dropdown" 
+                    className="hover-expandable" tabIndex='7'
+                    onClick={props.isTouch ? null : (e => toggleDropdown(e))}
+                    onTouchStart={props.isTouch ? (e => toggleDropdown(e)) : null}
+                    onKeyDown={e => toggleDropdown(e)}
+                >Change colors<span>&#9660;</span>
+                    <div className="hidden-content hidden">
+                        <ul>
+                            <li tabIndex='8'>Nodes color
+                                <ul className="color-list" id="node-color-picker" 
+                                    onClick={props.isTouch ?  null : (e => setColor(e))}
+                                    onTouchStart={props.isTouch ? (e => setColor(e)) : null}
+                                    onKeyDown={e => setColor(e)}
+                                >
+                                    {
+                                        nodeColors.map(({color, index}) => {
+                                            let className = 'color-option';
+                                            if(props.nodeColor === color)
+                                                className += ' selected-color';
+                                            return <div className={className} style={{backgroundColor: color}} tabIndex={index} key={index}></div>
+                                        })
+                                    }
+                                </ul>
+                            </li>
+                            <li tabIndex='12'>Edges color
+                                <ul className="color-list" id="edge-color-picker" 
+                                    onClick={props.isTouch ?  null : (e => setColor(e))}
+                                    onTouchStart={props.isTouch ? (e => setColor(e)) : null}
+                                    onKeyDown={e => setColor(e)}
+                                >
+                                    {
+                                        edgeColors.map(({color, index}) => {
+                                            let className = 'color-option';
+                                            if(props.edgeColor === color)
+                                                className += ' selected-color';
+                                            return <div className={className} style={{backgroundColor: color}} tabIndex={index} key={index}></div>
+                                        })
+                                    }
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    )
 }
+
+const areEqual = (prev, next) => false
 
 export default connect(
     state => ({
@@ -447,11 +434,13 @@ export default connect(
         vw: state.vw,
         vh: state.vh,
         nodes: state.nodes,
-        isTouch: state.isTouch
+        isTouch: state.isTouch,
+        nodeColor: state.nodeColor,
+        edgeColor: state.edgeColor
     }),
     {replaceMatrix, replaceNodes, newEdge, deleteEdges, 
      setGenerated, traverseEdges, deleteTraversedEdges,
      toggleAction, addPathEdges, deletePathEdges, 
-     setAlgorithmType, setMessageBox, setAlgorithmInfo}
-)(Panel);
-
+     setAlgorithmType, setMessageBox, setAlgorithmInfo,
+     setNodeColor, setEdgeColor}
+)(React.memo(Panel, areEqual));
