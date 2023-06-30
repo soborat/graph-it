@@ -14,8 +14,9 @@ Pretty complex and feels very easy to use. Also it uses raw canvas, no library. 
 2. Add edges by dragging from one node to another.
 3. Edit the graph in text form.
 4. Regenerate randomly the nodes, edges or entire graph.
-5. A tutorial similar to Discord.
-6. Has nice animations and is very smooth.
+5. BFS and DFS algorithms
+6. A tutorial similar to Discord.
+7. Has nice animations and is very smooth.
 
 ##
 
